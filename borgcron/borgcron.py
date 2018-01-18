@@ -12,7 +12,11 @@ import argparse
 import sys
 import yaml
 import logging
+import re
+import socket
+import struct
 import subprocess
+import sys
 import time
 
 defaultlogfile = 'borgcron.log'
@@ -127,6 +131,48 @@ class backupdir(object):
         return create, prune
 
 
+def wake_on_lan(cfg):
+
+    LOG.info("Sending WakeOnLAN magic paket.")
+    mac_str = cfg["config"]["wol_mac_address"]
+    net_bcast = cfg["config"]["remote_bcast_address"]
+    addr_byte = mac_str.split(':')
+    hw_addr = struct.pack('BBBBBB', int(addr_byte[0], 16),
+                                    int(addr_byte[1], 16),
+                                    int(addr_byte[2], 16),
+                                    int(addr_byte[3], 16),
+                                    int(addr_byte[4], 16),
+                                    int(addr_byte[5], 16))
+    msg = b'\xff' * 6 + hw_addr * 16
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+    sock.sendto(msg, (net_bcast, 7))
+    sock.sendto(msg, (net_bcast, 9))
+    sock.close()
+    return
+
+
+def check_server(cfg):
+
+    LOG.info("Checking if ssh on remote host is listening... plz wait")
+    wol_ip = cfg["config"]["remote_host_address"]
+    sock = socket.socket()
+    count = 0
+    res = sock.connect_ex((wol_ip, 22))
+    while res != 0 and count < 300:
+        time.sleep(1)
+        count += 1
+        sock.close()
+        sock = socket.socket()
+        res = sock.connect_ex((wol_ip, 22))
+    if res != 0:
+        LOG.critical("Remote host did not come up!")
+        exit(1)
+    LOG.info("Remote host is now up!")
+    time.sleep(3)
+    return
+
+
 def configlogger(args):
     LOG.setLevel(defaultloglevel)
     logfile = open(args.logfile.name, 'a')
@@ -190,6 +236,9 @@ def main():
     comp = cfg["config"]["compression"]
     flags = cfg["config"]["borg_options"]
     prescript = cfg["config"]["prerun_script"]
+    if cfg["config"]["wake_remote_host"] and not args.pretend:
+        wake_on_lan(cfg)
+        check_server(cfg)
     LOG.debug("prescript is: %s" % prescript.split())
     if prescript != "":
         returncode = clicommand(prescript.split(), logfile).execute()
@@ -211,6 +260,18 @@ def main():
                 clicommand(createcmd, logfile).execute()
                 if directory["prune"]:
                     clicommand(prunecmd, logfile).execute()
+    if cfg["config"]["shutdown_remote_host"]:
+        sshtarget = repo.split(':')
+        shutdowncmd = ("ssh %s %s" % (sshtarget[0],
+                       cfg["config"]["shutdown_command"]))
+        LOG.debug("shutdowncmd is: %s" % shutdowncmd)
+        if not args.pretend:
+            LOG.info("Shuting down remote host.")
+            returncode = clicommand(shutdowncmd.split(),
+                                    logfile).execute()
+            if returncode == 1:
+                LOG.critical("Shutdown of remote failed!")
+                exit(1)
     postscript = cfg["config"]["postrun_script"]
     LOG.debug("postscript is: %s" % postscript.split())
     if postscript != "":
@@ -218,6 +279,7 @@ def main():
         if returncode == 1:
             LOG.critical("execution of postrun_script failed! -> bailing out.")
             exit(1)
+
 
 
 if __name__ == "__main__":

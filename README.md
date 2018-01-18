@@ -24,6 +24,12 @@ An example configuration file can be forund at _/etc/borcron/cfg_exampl.yml_.
 config:
     borg_options: "-v -s"
     target_repository: /your/backup/archive.attic
+    wake_remote_host: False
+    shutdown_remote_host: False
+    remote_host_address: "192.168.2.100"
+    remote_network_bcast: "192.168.2.255"
+    wol_mac_address: "90:2b:34:af:c3:2d"
+    shutdown_command: "sudo shutdown -h +1"
     compression: "lz4"
     prerun_script: ""
     postrun_script: ""
@@ -53,6 +59,24 @@ Additonal options to pass to borg backup archiver.
 
 **target_repository:**
 The path to the borg repository. See [Repository URLs](https://borgbackup.readthedocs.io/en/stable/usage/general.html#repository-urls) in borg documentation.
+
+**wake_remote_host:**
+If set to True borgcron will try to wake up the target host via WakeOnLAN.
+
+**shutdown_remote_host:**
+If set to True borgcron will try to shutdown the target after the backup.
+
+**remote_host_address:**
+Ip address of target host.
+
+**remote_network_bcast:**
+Broadcast address of target network where the WoL MagicPaket is sent.
+
+**wol_mac_address:**
+Mac address of host to turn on vi WakeOnLAN.
+
+**shutdown_command:**
+Shutdown command to be to the taget host.
 
 **compression:**
 Compression algorythm used. See [borg help compression](https://borgbackup.readthedocs.io/en/stable/usage/help.html#borg-help-compression) for details.

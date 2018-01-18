@@ -1,6 +1,12 @@
 config:
     borg_options: "-v -s"
     target_repository: /your/backup/archive.attic
+    wake_remote_host: False
+    shutdown_remote_host: False
+    remote_host_address: "192.168.2.100"
+    remote_bcast_address: "192.168.2.255"
+    wol_mac_address: "90:2b:34:af:c3:2d"
+    shutdown_command: "sudo shutdown -h +1"
     compression: "lz4"
     prerun_script: ""
     postrun_script: ""
@@ -12,7 +18,7 @@ config:
           month: 12
           years: 3
         - name: /more/important/data
-          namedepth: 0
+          namedepth: 2
           prune: True
           days: 5
           month: 12
