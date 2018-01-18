@@ -114,3 +114,25 @@ Number of monthly archives to keep. See [borg prune docs](https://borgbackup.rea
 
 **years:**
 Number of yearly archives to keep. See [borg prune docs](https://borgbackup.readthedocs.io/en/stable/usage/prune.html).
+
+### Usage
+
+**via cmdline:**
+
+```borgcron /etc/borgcron/test.yml -l /root/borgcron.log```
+
+**via cron:**
+
+```vi /etc/cron.d/borgcron```
+
+```
+# Example of job definition:
+# .---------------- minute (0 - 59)
+# |  .------------- hour (0 - 23)
+# |  |  .---------- day of month (1 - 31)
+# |  |  |  .------- month (1 - 12) OR jan,feb,mar,apr ...
+# |  |  |  |  .---- day of week (0 - 6) (Sunday=0 or 7) OR sun,mon,tue,wed,thu,fri,sat
+# |  |  |  |  |
+# *  *  *  *  *     user-name   command to be executed
+  0  1  *  *  *     root        /usr/bin/borgcron /etc/borgcron/test.yml -l /root/borgcron.log
+```
