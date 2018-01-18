@@ -1,3 +1,8 @@
+### v0.3
+
+* add wakeonlan feature
+* add shutdown feature
+
 ### v0.2
 
 * nicer names for config values

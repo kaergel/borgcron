@@ -8,7 +8,7 @@ install_requires = ['PyYAML']
 tests_require = ['nose']
 
 setup(name = 'borgcron',
-      version = '0.2',
+      version = '0.3',
       description = 'execute borgbackup without user interaction',
       url = '',
       author = 'Thomas Kärgel',
