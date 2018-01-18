@@ -1,3 +1,8 @@
+### v0.2
+
+* nicer names for config values
+* support configurable compression 
+
 ### v0.1
 
 * rename from cronbackub to borgcron

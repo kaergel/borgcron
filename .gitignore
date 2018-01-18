@@ -1,6 +1,9 @@
 # Compiled python modules.
 **.pyc
 
+# vi swap files
+**.swp
+
 # Setuptools distribution folder.
 /dist/
 

@@ -104,11 +104,12 @@ class backupdir(object):
         LOG.debug("title is: %s" % title)
         return title
 
-    def generate_cmds(self, args, flags, repo):
+    def generate_cmds(self, args, flags, comp, repo):
         LOG.info("Starting backup of directroy %s" % self._name)
         LOG.debug("pretend is: %s" % args.pretend)
         now = datetime.datetime.today().strftime('%Y-%m-%d_%H%M%S')
-        create = ['/usr/local/bin/borg', 'create', '-C', 'lz4']
+        create = ['/usr/local/bin/borg', 'create', '-C']
+        create += [comp]
         create += flags.split()
         create += [repo + '::' + self._get_title() + '-' + now]
         create += [self._name]
@@ -185,36 +186,37 @@ def main():
     logfile = configlogger(args)
     LOG.debug("args:\n" + str(args))
     cfg = parseconfig(args)
-    repo = cfg["config"]["dir_target_repo"]
-    flags = cfg["config"]["dir_borg_flags"]
-    prescript = cfg["config"]["dir_script_pre"]
+    repo = cfg["config"]["target_repository"]
+    comp = cfg["config"]["compression"]
+    flags = cfg["config"]["borg_options"]
+    prescript = cfg["config"]["prerun_script"]
     LOG.debug("prescript is: %s" % prescript.split())
     if prescript != "":
         returncode = clicommand(prescript.split(), logfile).execute()
         if returncode == 1:
-            LOG.critical("execution of prescript failed! -> bailing out.")
+            LOG.critical("execution of prerun_script failed! -> bailing out.")
             exit(1)
-    if "dirs" in cfg["config"]:
-        for directory in cfg["config"]["dirs"]:
+    if "directories" in cfg["config"]:
+        for directory in cfg["config"]["directories"]:
             LOG.debug("item config is:\n" +
                       yaml.dump(directory,
                                 explicit_start=True,
                                 default_flow_style=False))
             dir_item = backupdir(directory)
             LOG.debug("dir_item.name is %s" % dir_item._name)
-            createcmd, prunecmd = dir_item.generate_cmds(args, flags, repo)
+            createcmd, prunecmd = dir_item.generate_cmds(args, flags, comp, repo)
             if args.pretend:
                 pretendoutput(createcmd, prunecmd)
             else:
                 clicommand(createcmd, logfile).execute()
                 if directory["prune"]:
                     clicommand(prunecmd, logfile).execute()
-    postscript = cfg["config"]["dir_script_post"]
+    postscript = cfg["config"]["postrun_script"]
     LOG.debug("postscript is: %s" % postscript.split())
     if postscript != "":
         returncode = clicommand(postscript.split(), logfile).execute()
         if returncode == 1:
-            LOG.critical("execution of postscript failed! -> bailing out.")
+            LOG.critical("execution of postrun_script failed! -> bailing out.")
             exit(1)
 
 

@@ -1,7 +1,7 @@
 
 ## borgcron
 
-A wrapper around [borgbackup](https://github.com/borgbackup/borg) intended to run without user interaction via cron.
+A wrapper around [borgbackup](https://github.com/borgbackup/borg) intended to run borg without user interaction via cron.
 
 ### Installation
 
@@ -22,13 +22,12 @@ An example configuration file can be forund at _/etc/borcron/cfg_exampl.yml_.
 
 ```
 config:
-    # dir_attic_flags: additional flags for borg
-    # dir_target_repo: attic repository where dirs get stored
-    dir_attic_flags: "-v -s"
-    dir_target_repo: /your/backup/archive.attic
-    dir_script_pre: ""
-    dir_script_post: ""
-    dirs:
+    borg_options: "-v -s"
+    target_repository: /your/backup/archive.attic
+    compression: "lz4"
+    prerun_script: ""
+    postrun_script: ""
+    directories:
         - name: /your/important/data
           namedepth: 0
           prune: True
@@ -49,19 +48,22 @@ config:
           years: 3
 ```
 
-**dir_attic_flags:** 
+**borg_options:** 
 Additonal options to pass to borg backup archiver.
 
-**dir_target_repo:**
+**target_repository:**
 The path to the borg repository. See [Repository URLs](https://borgbackup.readthedocs.io/en/stable/usage/general.html#repository-urls) in borg documentation.
 
-**dir_script_pre:**
-Script run prior execution of borg-
+**compression:**
+Compression algorythm used. See [borg help compression](https://borgbackup.readthedocs.io/en/stable/usage/help.html#borg-help-compression) for details.
 
-**dir_script_post:**
+**prerun_script:**
+Script run prior execution of borg.
+
+**postrun_script:**
 Script run after execution of borg has finished.
 
-**dirs:**
+**directories:**
 A list of dictionaries, each specifying a location to backup and related options.
 
 **name:**

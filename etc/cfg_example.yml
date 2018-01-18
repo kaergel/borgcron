@@ -1,11 +1,10 @@
 config:
-    # dir_attic_flags: additional flags for borg
-    # dir_target_repo: attic repository where dirs get stored
-    dir_attic_flags: "-v -s"
-    dir_target_repo: /your/backup/archive.attic
-    dir_script_pre: ""
-    dir_script_post: ""
-    dirs:
+    borg_options: "-v -s"
+    target_repository: /your/backup/archive.attic
+    compression: "lz4"
+    prerun_script: ""
+    postrun_script: ""
+    directories:
         - name: /your/important/data
           namedepth: 0
           prune: True
