@@ -202,7 +202,7 @@ def parseconfig(args):
         LOG.warn("Awaiting YAML config from stdin")
         stream = sys.stdin
     try:
-        config = yaml.load(stream)
+        config = yaml.safe_load(stream)
         LOG.debug("YAML config is:\n" + yaml.dump(config,
                                                   explicit_start=True,
                                                   default_flow_style=False))
